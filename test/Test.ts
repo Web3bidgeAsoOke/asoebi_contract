@@ -3,7 +3,6 @@ import { expect } from 'chai';
 import hre from 'hardhat';
 
 describe('Deployment Tests', function () {
-  // We define a fixture to reuse the same setup in every test.
   async function deployContractsFixture() {
     const [owner] = await hre.ethers.getSigners();
 
