@@ -14,8 +14,14 @@ contract OwnerShip {
     error AddressZero_OwnerShip();
 
     // ======  Events =====
-    event OwnershipTransferred(address indexed previousOwner, address indexed newOwner);
-    event ProposedNewOwner(address indexed previousOwner, address indexed newOwner);
+    event OwnershipTransferred(
+        address indexed previousOwner,
+        address indexed newOwner
+    );
+    event ProposedNewOwner(
+        address indexed previousOwner,
+        address indexed newOwner
+    );
 
     address public owner;
     address public newOwner;
@@ -47,7 +53,7 @@ contract OwnerShip {
      * @dev Allows the current owner to propose a new owner.
      * @param _newOwner The address of the proposed new owner.
      */
-    function proposeNewOwner(address _newOwner) internal onlyOwner {
+    function proposeNewOwner(address _newOwner) public onlyOwner {
         require(_newOwner != address(0), AddressZero_OwnerShip());
         newOwner = _newOwner;
         emit ProposedNewOwner(msg.sender, _newOwner);

@@ -55,7 +55,8 @@ describe('Deployment Tests', function () {
     //   const { asoEbiAuction, escrow } = await loadFixture(
     //     deployContractsFixture
     //   );
-    //   expect(await asoEbiAuction.escrowAddress()).to.equal(escrow.getAddress());
+    //   const actualEscrowAddress = await asoEbiAuction.escrowAddress(); // Add await here
+    //   expect(actualEscrowAddress).to.equal(escrow.getAddress());
     // });
 
     it('Should deploy the OwnerShip contract and set the right owner', async function () {
@@ -64,7 +65,7 @@ describe('Deployment Tests', function () {
     });
   });
 
-  describe('Ownership Management (OwnerShip.sol)', function () {
+  describe('Ownership Management', function () {
     it('Should allow the current owner to propose a new owner', async function () {
       const { ownerShip, owner, otherAccount } = await loadFixture(
         deployContractsFixture
@@ -84,7 +85,7 @@ describe('Deployment Tests', function () {
       // Attempt to propose a new owner from a non-owner account
       await expect(
         ownerShip.connect(otherAccount).proposeNewOwner(otherAccount.address)
-      ).to.be.revertedWith('NotOwner');
+      ).to.be.revertedWithCustomError(ownerShip, 'NotOwner');
     });
 
     it('Should revert if the proposed new owner is the zero address', async function () {
@@ -92,10 +93,8 @@ describe('Deployment Tests', function () {
 
       // Owner tries to propose the zero address as the new owner
       await expect(
-        ownerShip
-          .connect(owner)
-          .proposeNewOwner(hre.ethers.constants.AddressZero)
-      ).to.be.revertedWith('AddressZero_OwnerShip');
+        ownerShip.connect(owner).proposeNewOwner(hre.ethers.ZeroAddress)
+      ).to.be.revertedWithCustomError(ownerShip, 'AddressZero_OwnerShip');
     });
   });
 });
