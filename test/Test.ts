@@ -4,7 +4,7 @@ import hre from 'hardhat';
 
 describe('Deployment Tests', function () {
   async function deployContractsFixture() {
-    const [owner] = await hre.ethers.getSigners();
+    const [owner, otherAccount] = await hre.ethers.getSigners();
 
     // Deploy AcceptedTokens contract
     const AcceptedTokens = await hre.ethers.getContractFactory(
@@ -31,6 +31,7 @@ describe('Deployment Tests', function () {
       asoEbiAuction,
       ownerShip,
       owner,
+      otherAccount,
       feePercentage,
     };
   }
@@ -60,6 +61,41 @@ describe('Deployment Tests', function () {
     it('Should deploy the OwnerShip contract and set the right owner', async function () {
       const { ownerShip, owner } = await loadFixture(deployContractsFixture);
       expect(await ownerShip.owner()).to.equal(owner.address);
+    });
+  });
+
+  describe('Ownership Management (OwnerShip.sol)', function () {
+    it('Should allow the current owner to propose a new owner', async function () {
+      const { ownerShip, owner, otherAccount } = await loadFixture(
+        deployContractsFixture
+      );
+
+      // Owner proposes a new owner
+      await ownerShip.connect(owner).proposeNewOwner(otherAccount.address);
+
+      expect(await ownerShip.newOwner()).to.equal(otherAccount.address);
+    });
+
+    it('Should revert if a non-owner tries to propose a new owner', async function () {
+      const { ownerShip, otherAccount } = await loadFixture(
+        deployContractsFixture
+      );
+
+      // Attempt to propose a new owner from a non-owner account
+      await expect(
+        ownerShip.connect(otherAccount).proposeNewOwner(otherAccount.address)
+      ).to.be.revertedWith('NotOwner');
+    });
+
+    it('Should revert if the proposed new owner is the zero address', async function () {
+      const { ownerShip, owner } = await loadFixture(deployContractsFixture);
+
+      // Owner tries to propose the zero address as the new owner
+      await expect(
+        ownerShip
+          .connect(owner)
+          .proposeNewOwner(hre.ethers.constants.AddressZero)
+      ).to.be.revertedWith('AddressZero_OwnerShip');
     });
   });
 });
