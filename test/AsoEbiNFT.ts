@@ -49,7 +49,7 @@ describe("AsoEbiNFT", function () {
   it("should return the correct design data", async function () {
     const designId = 2;
     const ipfsHash = "QmTestHash2";
-    const price = ethers.parseEther("2.0"); // 2 ETH
+    const price = ethers.parseEther("2.0"); 
 
     await asoEbiNFT.createDesign(designId, ipfsHash, price);
 
