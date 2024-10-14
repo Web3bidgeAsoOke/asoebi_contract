@@ -115,6 +115,8 @@ address public escrowAddress;
     mapping(uint256 => Listing) public listings;
     // tokenid -> buyer -> Order
     mapping(uint256 => mapping(address => Order)) public orders;
+      // Mapping from token ID to token URI
+    mapping(uint256 => string) private _tokenURIs;
 
     modifier validLister {
         require(users[msg.sender].roleType == RoleType.FabricSeller || users[msg.sender].roleType == RoleType.Buyer , NotVaildLister()  );
@@ -275,17 +277,27 @@ address public escrowAddress;
     return nftAddress.ownerOf(tokenId) != address(0);
     }
 
+    function mint(uint256 tokenId, string memory uri) external validLister {
+    // Check if the tokenId is already minted
+    require(!_exists(tokenId), "Token already minted");
 
-    function mint(uint256 _tokenId) external validLister nonReentrant {
-    //Registered user
-    require(users[msg.sender].isRegistered, "User is not registered");
-    
-    //TokenId is not already minted
-    require(!_exists(_tokenId), "Token already minted");
+    // Mint the NFT
+    _safeMint(msg.sender, tokenId);
 
-    // Mint the token 
-    _safeMint(msg.sender, _tokenId);
-    
+    // Set the token URI for the newly minted token
+    _setTokenURI(tokenId, uri);
+    }
+
+    // Internal function to set the token URI
+    function _setTokenURI(uint256 tokenId, string memory uri) internal {
+    require(_exists(tokenId), "URI set of nonexistent token");
+    _tokenURIs[tokenId] = uri;
+    }
+
+    // Override the ERC721's tokenURI function
+    function tokenURI(uint256 tokenId) public view override returns (string memory) {
+    require(_exists(tokenId), "ERC721Metadata: URI query for nonexistent token");
+    return _tokenURIs[tokenId];
     }
 
     // ======  Owner's Function =====
